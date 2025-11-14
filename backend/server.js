@@ -71,6 +71,28 @@ app.put("/updatestudent/:rollno", async (req, res) => {
   res.json(student);
 });
 
+// PARTIAL UPDATE (PATCH)
+app.patch("/patchstudent/:rollno", async (req, res) => {
+  try {
+    const student = await Student.findOneAndUpdate(
+      { rollno: req.params.rollno },
+      req.body, // only update fields that are sent
+      { new: true }
+    );
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ message: "Invalid Roll No" });
+  }
+});
+
+app.get("/", (req, res) => {
+  res.send("Backend is Running!");
+});
 
 // Delete Student
 app.delete("/deletestudent/:rollno", async (req, res) => {
@@ -85,4 +107,4 @@ app.delete("/deletestudent/:rollno", async (req, res) => {
 
 
 // Start Server
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(5050, () => console.log("Server running on port 5050"));
