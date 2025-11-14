@@ -44,7 +44,7 @@ app.get("/getallstudents", async (req, res) => {
   res.json(students);
 });
 
-// Get One Student by ID
+// Get One Student by rollno
 app.get("/getstudent/:rollno", async (req, res) => {
   try {
     const student = await Student.findOne({ rollno: req.params.rollno });
