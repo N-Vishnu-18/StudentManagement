@@ -8,36 +8,61 @@ on:
 
 jobs:
   backend-ci:
+    name: Backend CI (build, test, docker push)
     runs-on: ubuntu-latest
+    env:
+      # Optional: change image name if you want
+      IMAGE_NAME: student-backend
+      IMAGE_TAG: latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    - name: Install Dependencies
-      run: npm install
-      working-directory: ./backend
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          set -eux
+          npm ci
 
-    - name: Run Backend Tests
-      run: npm test
-      working-directory: ./backend
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          set -eux
+          npm test
 
-    - name: Build Docker Image
-      run: docker build -t student-backend ./backend
+      # Debug step (uncomment while troubleshooting)
+      # - name: Show Docker / Secrets debug info
+      #   run: |
+      #     set -eux
+      #     echo "DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}'"
+      #     docker --version || true
+      #     docker images --no-trunc || true
 
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Tag Docker Image
-      run: docker tag student-backend ${{ secrets.DOCKER_USERNAME }}/student-backend:latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          # tag the image directly with full repo name to avoid separate tag step
+          tags: ${{ secrets.DOCKER_USERNAME }}/student-backend:latest
+          # optionally enable buildx cache (comment out if you don't want it)
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
-    - name: Push Docker Image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/student-backend:latest
+      - name: Confirm pushed image (optional)
+        run: |
+          set -eux
+          echo "Built and pushed: ${{ secrets.DOCKER_USERNAME }}/student-backend:latest"
