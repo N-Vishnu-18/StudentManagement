@@ -8,6 +8,36 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// -------------------------
+//  PROMETHEUS METRICS
+// -------------------------
+const clientpm = require("prom-client");
+const register = new clientpm.Registry();
+
+// Collect default CPU, memory, event loop metrics
+clientpm.collectDefaultMetrics({ register });
+
+// Custom request counter metric
+const httpRequestCounter = new clientpm.Counter({
+  name: "http_requests_total",
+  help: "Total number of HTTP requests received",
+});
+register.registerMetric(httpRequestCounter);
+// Count all requests
+app.use((req, res, next) => {
+  httpRequestCounter.inc();
+  next();
+});
+// -------------------------
+
+// -------------------------
+//  METRICS ENDPOINT
+// -------------------------
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", register.contentType);
+  res.send(await register.metrics());
+});
+
 // MongoDB Connection
 mongoose
   .connect("mongodb+srv://prashanthagithe:prashanth@cluster0.vus3a9i.mongodb.net/StudentDB")
@@ -106,7 +136,7 @@ app.delete("/deletestudent/:rollno", async (req, res) => {
 });
 
 
-const PORT = 5050;
+const PORT = 5051;
 if (require.main === module) {
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
