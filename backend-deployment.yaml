@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: backend
-        image: prashanthagithe/student-backend:latest
+        image: nvishnuvardhan/student-backend:latest
         ports:
         - containerPort: 5051

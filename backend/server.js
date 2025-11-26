@@ -40,7 +40,7 @@ app.get("/metrics", async (req, res) => {
 
 // MongoDB Connection
 mongoose
-  .connect("mongodb+srv://prashanthagithe:prashanth@cluster0.vus3a9i.mongodb.net/StudentDB")
+  .connect("mongodb+srv://vishnu:Vishnu@cluster0.uo2cuyd.mongodb.net/?appName=Cluster0")
   .then(() => console.log("Database Connected Successfully!"))
   .catch((err) => console.log("DB Error:", err));
 
